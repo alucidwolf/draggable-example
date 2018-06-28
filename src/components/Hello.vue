@@ -9,11 +9,12 @@
           <label><input type = "checkbox" v-model="editable">Enable drag and drop</label>      
         </div>
         <button type="button" class="btn btn-default" @click="orderList">Sort by original order</button>
+        <button type="button" class="btn btn-default" @click="getOrder">Get new list order</button>
       </div>
     </div>
 
     <div  class="col-md-3">
-        <draggable class="list-group" element="ul" v-model="list" :options="dragOptions" :move="onMove" @start="isDragging=true" @end="isDragging=false"> 
+        <draggable class="list-group" element="ul" v-model="list" :options="{group: { name: 'people', pull: 'clone', put: false}, sort: false}" :move="onMove" @start="isDragging=true" @end="isDragging=false"> 
           <transition-group type="transition" :name="'flip-list'">
             <li class="list-group-item" v-for="element in list" :key="element.order"> 
               <i :class="element.fixed? 'fa fa-anchor' : 'glyphicon glyphicon-pushpin'" @click=" element.fixed=! element.fixed" aria-hidden="true"></i>
@@ -25,12 +26,13 @@
     </div>
 
      <div  class="col-md-3">
-      <draggable element="span" v-model="list2" :options="dragOptions" :move="onMove"> 
+      <draggable element="span" v-model="list2" :options="{group:'people', sort: true}" :move="onMove" @end="onEnd"> 
           <transition-group name="no" class="list-group" tag="ul">
-            <li class="list-group-item" v-for="element in list2" :key="element.order"> 
+            <li class="list-group-item" v-for="(element, index) in list2" :key="element.order"> 
               <i :class="element.fixed? 'fa fa-anchor' : 'glyphicon glyphicon-pushpin'" @click=" element.fixed=! element.fixed" aria-hidden="true"></i>
               {{element.name}}
               <span class="badge">{{element.order}}</span>
+              <button @click="remove(index)">X</button>
             </li> 
           </transition-group>
       </draggable>
@@ -68,10 +70,19 @@ export default {
     orderList () {
       this.list = this.list.sort((one,two) =>{return one.order-two.order; })
     },
+    getOrder(){
+      console.log(this.list2);
+    },
     onMove ({relatedContext, draggedContext}) {
       const relatedElement = relatedContext.element;
       const draggedElement = draggedContext.element;
       return (!relatedElement || !relatedElement.fixed) && !draggedElement.fixed
+    },
+    remove: function(index){
+      this.list2.splice(index, 1);
+    },
+    onEnd: function(el){
+      console.log(el);
     }
   },
   computed: {
